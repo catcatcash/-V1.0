@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 魔法番茄钟 ✨</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 25%, #ffeaa7 50%, #dfe6e9 75%, #a29bfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .floating-decoration {
+            position: fixed;
+            font-size: 40px;
+            opacity: 0.4;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, -40px) rotate(10deg); }
+        }
+
+        .deco-1 { top: 5%; left: 5%; }
+        .deco-2 { top: 15%; right: 10%; animation-delay: 1s; }
+        .deco-3 { bottom: 10%; left: 8%; animation-delay: 2s; }
+        .deco-4 { bottom: 20%; right: 5%; animation-delay: 3s; }
+        .deco-5 { top: 50%; left: 2%; animation-delay: 4s; }
+        .deco-6 { top: 60%; right: 3%; animation-delay: 5s; }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            animation: containerPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes containerPulse {
+            0%, 100% { box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3); }
+            50% { box-shadow: 0 25px 70px rgba(138, 43, 226, 0.4); }
+        }
+
+        .container-deco {
+            position: absolute;
+            font-size: 45px;
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .deco-tl { top: -25px; left: -25px; }
+        .deco-tr { top: -25px; right: -25px; animation-direction: reverse; }
+        .deco-bl { bottom: -25px; left: -25px; animation-delay: 2s; }
+        .deco-br { bottom: -25px; right: -25px; animation-direction: reverse; animation-delay: 2s; }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b9d, #c06c84, #6c5ce7, #a29bfe);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowText 5s ease infinite;
+            filter: drop-shadow(2px 2px 4px rgba(255, 105, 180, 0.3));
+        }
+
+        @keyframes rainbowText {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ff6b9d;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 12px 25px;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            color: #fff;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(253, 203, 110, 0.4);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(253, 203, 110, 0.6);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #fd79a8, #a29bfe);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.5);
+            transform: scale(1.05);
+        }
+
+        .mode-btn[data-mode="long-break"] {
+            background: linear-gradient(135deg, #ff9ff3, #feca57);
+        }
+
+        .mode-btn[data-mode="long-break"]:hover {
+            box-shadow: 0 6px 20px rgba(255, 159, 243, 0.6);
+        }
+
+        .mode-btn[data-mode="long-break"].active {
+            background: linear-gradient(135deg, #fd79a8, #ff6b9d);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.6);
+        }
+
+        .timer-section {
+            text-align: center;
+            margin: 40px 0;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-circle {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+        }
+
+        .timer-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotate(-90deg);
+        }
+
+        .timer-svg circle {
+            fill: none;
+            stroke-width: 12;
+        }
+
+        .timer-bg {
+            stroke: rgba(162, 155, 254, 0.3);
+        }
+
+        .timer-progress {
+            stroke: url(#timer-gradient);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff6b9d, #c06c84, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-variant-numeric: tabular-nums;
+            filter: drop-shadow(3px 3px 6px rgba(108, 92, 231, 0.3));
+        }
+
+        .timer-display.running {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 18px 45px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .control-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 立体化按钮样式 - 每个按钮不同颜色 */
+        .start-btn {
+            background: linear-gradient(145deg, #55efc4, #00b894);
+            box-shadow: 0 8px 0 #00856f, 0 12px 25px rgba(0, 184, 148, 0.4);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #00856f, 0 15px 30px rgba(0, 184, 148, 0.5);
+        }
+
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #00856f, 0 8px 20px rgba(0, 184, 148, 0.4);
+        }
+
+        .pause-btn {
+            background: linear-gradient(145deg, #fab1a0, #e17055);
+            box-shadow: 0 8px 0 #b83e1f, 0 12px 25px rgba(225, 112, 85, 0.4);
+            color: white;
+        }
+
+        .pause-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #b83e1f, 0 15px 30px rgba(225, 112, 85, 0.5);
+        }
+
+        .pause-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #b83e1f, 0 8px 20px rgba(225, 112, 85, 0.4);
+        }
+
+        .reset-btn {
+            background: linear-gradient(145deg, #a29bfe, #6c5ce7);
+            box-shadow: 0 8px 0 #4834d4, 0 12px 25px rgba(108, 92, 231, 0.4);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #4834d4, 0 15px 30px rgba(108, 92, 231, 0.5);
+        }
+
+        .reset-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #4834d4, 0 8px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3));
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(162, 155, 254, 0.4);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #fd79a8, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #636e72;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .goal-input {
+            background: none;
+            border: none;
+            font-size: 2em;
+            font-weight: bold;
+            width: 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #fd79a8, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            cursor: pointer;
+        }
+
+        .goal-input:focus {
+            outline: 2px solid #fd79a8;
+            border-radius: 8px;
+            -webkit-text-fill-color: #fd79a8;
+        }
+
+        .summary-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(145deg, #ffeaa7, #fdcb6e);
+            box-shadow: 0 8px 0 #e6b33e, 0 12px 25px rgba(253, 203, 110, 0.4);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .summary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 #e6b33e, 0 15px 30px rgba(253, 203, 110, 0.5);
+        }
+
+        .summary-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #e6b33e, 0 8px 20px rgba(253, 203, 110, 0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #ffffff, #ffeaa7);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlide 0.5s;
+        }
+
+        @keyframes modalSlide {
+            from { transform: translate(-50%, -60%); opacity: 0; }
+            to { transform: translate(-50%, -50%); opacity: 1; }
+        }
+
+        .modal-header {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #fd79a8, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #fd79a8;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(253, 121, 168, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #fd79a8;
+        }
+
+        .summary-item h3 {
+            color: #fd79a8;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(162, 155, 254, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #55efc4, #81ecec, #74b9ff);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 30px 20px; }
+            h1 { font-size: 2em; }
+            .timer-display { font-size: 3em; }
+            .timer-circle { width: 240px; height: 240px; }
+            .control-btn { padding: 15px 30px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-decoration deco-1">🦄</div>
+    <div class="floating-decoration deco-2">🌟</div>
+    <div class="floating-decoration deco-3">🍭</div>
+    <div class="floating-decoration deco-4">🎀</div>
+    <div class="floating-decoration deco-5">🌈</div>
+    <div class="floating-decoration deco-6">🧁</div>
+
+    <div class="container">
+        <div class="container-deco deco-tl">✨</div>
+        <div class="container-deco deco-tr">💖</div>
+        <div class="container-deco deco-bl">🌸</div>
+        <div class="container-deco deco-br">⭐</div>
+
+        <h1>🍅 魔法番茄钟 🦄</h1>
+        <div class="subtitle">专注工作，享受生活 ✨</div>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="pomodoro">🍅 工作时间</button>
+            <button class="mode-btn" data-mode="short-break">☕ 短休息</button>
+            <button class="mode-btn" data-mode="long-break">🌈 长休息</button>
+        </div>
+
+        <div class="timer-section">
+            <div class="timer-circle">
+                <svg class="timer-svg" width="280" height="280">
+                    <defs>
+                        <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff6b9d;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#c06c84;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#6c5ce7;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="timer-bg" cx="140" cy="140" r="130"></circle>
+                    <circle class="timer-progress" id="progressCircle" cx="140" cy="140" r="130" 
+                            stroke-dasharray="816.814" stroke-dashoffset="0"></circle>
+                </svg>
+                <div class="timer-display" id="timer">25:00</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn start-btn" id="startBtn">▶️ 开始</button>
+            <button class="control-btn pause-btn" id="pauseBtn" style="display:none;">⏸️ 暂停</button>
+            <button class="control-btn reset-btn" id="resetBtn">🔄 重置</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🍅</div>
+                <div class="stat-value" id="completedPomodoros">0</div>
+                <div class="stat-label">完成番茄钟</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="totalWorkTime">0</div>
+                <div class="stat-label">工作分钟</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <input type="number" class="goal-input" id="todayGoal" value="8" min="1" max="20" title="点击修改目标">
+                <div class="stat-label">今日目标</div>
+            </div>
+        </div>
+
+        <button class="summary-btn" id="summaryBtn">📊 查看每日总结</button>
+    </div>
+
+    <div class="modal" id="summaryModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">×</span>
+            <div class="modal-header">🌟 今日成就总结 🌟</div>
+            
+            <div class="summary-item">
+                <h3>🍅 完成情况</h3>
+                <p>今天完成了 <strong id="modal-completed">0</strong> 个番茄钟</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="completion-progress" style="width: 0%"></div>
+                </div>
+                <p style="margin-top: 10px; color: #636e72;">目标完成度: <span id="completion-rate">0%</span></p>
+            </div>
+
+            <div class="summary-item">
+                <h3>⏰ 时间统计</h3>
+                <p>总工作时长: <strong id="modal-work-time">0</strong> 分钟</p>
+                <p>总休息时长: <strong id="modal-break-time">0</strong> 分钟</p>
+                <p>专注效率: <strong id="focus-efficiency">优秀</strong> 🌟</p>
+            </div>
+
+            <div class="summary-item">
+                <h3>🎯 今日成就</h3>
+                <div id="achievements"></div>
+            </div>
+
+            <div class="summary-item">
+                <h3>💡 温馨提示</h3>
+                <p id="daily-tip">记得劳逸结合，适当休息让大脑更高效哦！✨</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MagicPomodoro {
+            constructor() {
+                this.modes = { 'pomodoro': 25 * 60, 'short-break': 5 * 60, 'long-break': 15 * 60 };
+                this.currentMode = 'pomodoro';
+                this.timeLeft = this.modes[this.currentMode];
+                this.totalTime = this.modes[this.currentMode];
+                this.isRunning = false;
+                this.timer = null;
+                this.completedPomodoros = 0;
+                this.totalWorkTime = 0;
+                this.totalBreakTime = 0;
+                this.todayGoal = 8;
+                
+                this.init();
+            }
+
+            init() {
+                this.timerDisplay = document.getElementById('timer');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.modeButtons = document.querySelectorAll('.mode-btn');
+                this.progressCircle = document.getElementById('progressCircle');
+                this.goalInput = document.getElementById('todayGoal');
+                
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                
+                this.goalInput.addEventListener('change', (e) => {
+                    this.todayGoal = Math.max(1, Math.min(20, parseInt(e.target.value) || 8));
+                    this.goalInput.value = this.todayGoal;
+                });
+                
+                this.modeButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchMode(e.target.dataset.mode));
+                });
+
+                document.getElementById('summaryBtn').addEventListener('click', () => this.showSummary());
+                document.getElementById('closeModal').addEventListener('click', () => this.closeSummary());
+                document.getElementById('summaryModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'summaryModal') this.closeSummary();
+                });
+
+                this.updateDisplay();
+                this.updateProgress();
+            }
+
+            start() {
+                this.isRunning = true;
+                this.startBtn.style.display = 'none';
+                this.pauseBtn.style.display = 'inline-block';
+                this.timerDisplay.classList.add('running');
+
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    this.updateProgress();
+                    if (this.timeLeft === 0) this.complete();
+                }, 1000);
+            }
+
+            pause() {
+                this.isRunning = false;
+                clearInterval(this.timer);
+                this.startBtn.style.display = 'inline-block';
+                this.pauseBtn.style.display = 'none';
+                this.timerDisplay.classList.remove('running');
+            }
+
+            reset() {
+                this.pause();
+                this.timeLeft = this.modes[this.currentMode];
+                this.totalTime = this.modes[this.currentMode];
+                this.updateDisplay();
+                this.updateProgress();
+            }
+
+            complete() {
+                this.pause();
+                
+                if (this.currentMode === 'pomodoro') {
+                    this.completedPomodoros++;
+                    this.totalWorkTime += 25;
+                    this.updateStats();
+                    alert('🎉 完成一个番茄钟！休息一下吧！');
+                    this.switchMode(this.completedPomodoros % 4 === 0 ? 'long-break' : 'short-break');
+                } else {
+                    this.totalBreakTime += this.currentMode === 'short-break' ? 5 : 15;
+                    alert('✨ 休息结束！继续加油！');
+                    this.switchMode('pomodoro');
+                }
+            }
+
+            switchMode(mode) {
+                if (this.isRunning) return;
+                this.currentMode = mode;
+                this.timeLeft = this.modes[mode];
+                this.totalTime = this.modes[mode];
+                
+                this.modeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.mode === mode);
+                });
+                
+                this.updateDisplay();
+                this.updateProgress();
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.timeLeft / 60);
+                const seconds = this.timeLeft % 60;
+                this.timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            updateProgress() {
+                const circumference = 2 * Math.PI * 130;
+                const progress = (this.totalTime - this.timeLeft) / this.totalTime;
+                const offset = circumference * (1 - progress);
+                this.progressCircle.style.strokeDashoffset = offset;
+            }
+
+            updateStats() {
+                document.getElementById('completedPomodoros').textContent = this.completedPomodoros;
+                document.getElementById('totalWorkTime').textContent = this.totalWorkTime;
+            }
+
+            showSummary() {
+                const modal = document.getElementById('summaryModal');
+                const completionRate = Math.round((this.completedPomodoros / this.todayGoal) * 100);
+                
+                document.getElementById('modal-completed').textContent = this.completedPomodoros;
+                document.getElementById('modal-work-time').textContent = this.totalWorkTime;
+                document.getElementById('modal-break-time').textContent = this.totalBreakTime;
+                document.getElementById('completion-progress').style.width = Math.min(completionRate, 100) + '%';
+                document.getElementById('completion-rate').textContent = completionRate + '%';
+                
+                const efficiency = completionRate >= 100 ? '完美 🌟🌟🌟' : 
+                                  completionRate >= 80 ? '优秀 🌟🌟🌟' : 
+                                  completionRate >= 50 ? '良好 🌟🌟' : '加油 🌟';
+                document.getElementById('focus-efficiency').textContent = efficiency;
+                
+                const achievements = document.getElementById('achievements');
+                achievements.innerHTML = '';
+                if (this.completedPomodoros >= this.todayGoal) achievements.innerHTML += '<p>🏆 达成目标！太棒了！</p>';
+                if (this.completedPomodoros >= Math.floor(this.todayGoal * 0.75)) achievements.innerHTML += '<p>💪 专注力超强！</p>';
+                if (this.completedPomodoros >= 1) achievements.innerHTML += '<p>✨ 今天有进步！</p>';
+                if (this.completedPomodoros === 0) achievements.innerHTML = '<p>💖 明天一起加油吧！</p>';
+                
+                const tips = [
+                    '记得劳逸结合，适当休息让大脑更高效哦！✨',
+                    '专注25分钟，给自己一个小奖励吧！🎁',
+                    '保持规律作息，效率会更高哦！💫',
+                    '喝口水，伸个懒腰，继续加油！💧'
+                ];
+                document.getElementById('daily-tip').textContent = tips[Math.floor(Math.random() * tips.length)];
+                
+                modal.style.display = 'block';
+            }
+
+            closeSummary() {
+                document.getElementById('summaryModal').style.display = 'none';
+            }
+        }
+
+        new MagicPomodoro();
+    </script>
+</body>
+</html>
